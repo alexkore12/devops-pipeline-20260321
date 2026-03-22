@@ -48,6 +48,36 @@ checkov -d ./terraform
 | Integration Tests | Tests de integración |
 | Deploy to Production | Despliega a producción (solo main) |
 
+## 🤖 GitHub Actions
+
+El proyecto incluye workflows de CI/CD:
+
+### Workflows Incluidos
+
+| Workflow | Descripción | Frecuencia |
+|----------|-------------|------------|
+| `ci.yml` | Pipeline completo CI/CD | Push + Manual |
+| | Linting con shellcheck | |
+| | Escaneo de secretos | |
+| | Security scan con Grype | |
+| | Validación de Jenkinsfile | |
+| | Build de Docker | |
+| | Deploy (staging/production) | |
+
+### Uso de GitHub Actions
+
+```bash
+# Trigger manual deployment
+gh workflow run ci.yml -f environment=staging
+gh workflow run ci.yml -f environment=production
+```
+
+### Configuración de Secrets
+
+- `DOCKER_USERNAME`: Usuario de Docker Hub
+- `DOCKER_PASSWORD`: Token de Docker Hub
+- `KUBECONFIG`: Configuración de Kubernetes
+
 ## Configuración
 
 ### Variables de Entorno
@@ -77,6 +107,19 @@ CHECKOV_VERSION=3.0.0  # Para IaC
 
 - **CRITICAL**: Falla el build
 - **HIGH**: Notificación a Slack
+
+## Estructura
+
+```
+devops-pipeline-20260321/
+├── Jenkinsfile           # Pipeline de Jenkins
+├── README.md             # Este archivo
+├── DEPLOYMENT.md         # Guía de deployment
+├── SECURITY.md           # Políticas de seguridad
+└── .github/
+    └── workflows/
+        └── ci.yml        # GitHub Actions CI/CD
+```
 
 ## Ejecución
 
@@ -122,3 +165,7 @@ Solo se despliega a producción cuando:
 - Todos los tests pasan
 - No hay vulnerabilidades CRITICAL
 - Scan de contenedores pasa
+
+---
+
+*Actualizado: 2026-03-22 - Agregado GitHub Actions CI/CD con Grype*
