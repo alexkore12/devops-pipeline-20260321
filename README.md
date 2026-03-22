@@ -1,134 +1,100 @@
-# Jenkins CI/CD Pipeline
+# DevOps Pipeline
 
-Pipeline completo para CI/CD de aplicación backend con análisis de seguridad.
+Pipeline de CI/CD con Jenkins para aplicaciones Node.js con escaneo de seguridad.
 
-## 🚀 Características
+## ⚠️ Alerta de Seguridad - Trivy
 
-- **Multi-stage** - Build, Test, Security, Deploy
-- **Security Scanning** - Trivy, SonarQube
-- **Docker** - Build y push de imágenes
-- **Kubernetes** - Deploy automático
-- **Notifications** - Slack/Discord alerts
-- **Environment** - Staging y Production
+**Marzo 2026**: Trivy v0.69.4 fue comprometido via supply chain attack.
 
-## ⚠️ Alerta de Seguridad: Trivy Supply Chain
+Este pipeline:
+- ❌ Evita usar Trivy 0.69.4
+- ✅ Usa Trivy 0.69.3 (o versión segura)
+- ✅ Escanea contenedores
+- ✅ Escanea dependencias npm
 
-**⚠️ IMPORTANTE (21-Marzo-2026):** Se ha detectado el **SEGUNDO ataque de supply chain** contra Trivy.
-
-| Aspecto | Detalle |
-|---------|---------|
-| Versiones afectadas | 0.69.4 (maliciosa), 0.69.3-0.69.0 |
-| Vector | GitHub Actions comprometidas |
-| Acción | Verificar versión: `trivy --version` |
-
-**Recomendación:** Usar versión parcheada o descarga directa de binarios.
-
-## 📦 Requisitos
-
-- Jenkins 2.480+
-- Docker 27.0+
-- Kubernetes 1.31+
-- Trivy (última versión parcheada)
-- Plugins: Git, Docker, Kubernetes, Slack
-
-## 📋 Stages del Pipeline
+## Stages
 
 | Stage | Descripción |
 |-------|-------------|
-| Checkout | Código fuente |
-| Build | Compilación |
-| Test | Pruebas unitarias |
-| Security Scan | Análisis de vulnerabilidades |
-| Docker Build | Imagen container |
-| Scan Image | Escaneo de imagen Docker |
-| Deploy Staging | Deploy a staging |
-| Integration Tests | Pruebas de integración |
-| Deploy Production | Deploy a producción (solo main) |
+| Checkout | Clona el repositorio |
+| Build | Instala dependencias y compila |
+| Test | Ejecuta tests unitarios |
+| Dependency Scan | npm audit para vulnerabilidades |
+| Trivy Security Scan | Escanea imágenes de contenedor |
+| Container Scan | Escaneo profundo de vulnerabilidades |
+| Docker Build | Construye imagen Docker |
+| Deploy to Staging | Despliega a staging |
+| Integration Tests | Tests de integración |
+| Deploy to Production | Despliega a producción (solo main) |
 
-## 🔧 Configuración
+## Configuración
 
 ### Variables de Entorno
 
-```groovy
-environment {
-    DOCKER_REGISTRY = 'registry.example.com'
-    DOCKER_IMAGE = 'myapp'
-    K8S_NAMESPACE = 'production'
-    TRIVY_VERSION = '0.57.0'  // Usar versión parcheada
-}
+```bash
+DOCKER_REGISTRY=docker.io
+APP_NAME=backend-api
+TRIVY_VERSION=0.69.3  # NOT 0.69.4!
 ```
 
-### Secrets Requeridos
+### Secrets (Jenkins)
 
-- `DOCKER_USERNAME` - Usuario registry
-- `DOCKER_PASSWORD` - Password registry
-- `KUBECONFIG` - Configuración Kubernetes
-- `SLACK_WEBHOOK` - Webhook Slack
+- `DOCKER_REGISTRYCredentials`: Credenciales del registry
+- `KUBECONFIG`: Configuración de Kubernetes
 
-## 🐳 Docker Security
+## Seguridad
 
-```dockerfile
-# Usar imagen base minimal
-FROM python:3.11-slim
+### Supply Chain Protection
 
-# No correr como root
-USER 1000
+1. **npm audit**: Detecta vulnerabilidades en dependencias
+2. **Trivy**: Escanea la imagen construida
+3. **Versión verificada**: Evita versiones comprometidas
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD python -c "import requests; requests.get('/health')"
-```
+### Alertas
 
-## 🔒 Security Scanning
+- **CRITICAL**: Falla el build
+- **HIGH**: Notificación a Slack
 
-### Trivy
+## Ejecución
 
 ```bash
-# Escaneo de filesystem
-trivy fs --security-checks vuln,config .
-
-# Escaneo de imagen
-trivy image --severity HIGH,CRITICAL myapp:latest
-
-# Actualizar DB
-trivy db update
+# En Jenkins
+# 1. Crear pipeline job
+# 2. Point to Jenkinsfile
+# 3. Run build
 ```
 
-### Best Practices
+## Troubleshooting
 
-1. **Imágenes minimal** - Usar slim/alpine
-2. **No root** - USER 1000 en Dockerfile
-3. **Multi-stage** - Reducir tamaño final
-4. **Scanning** - Trivy en CI/CD
-5. **Secrets** - Nunca hardcodear
+### Error: Trivy 0.69.4 detected
 
-## ☸️ Kubernetes Deployment
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-spec:
-  replicas: 3
-  template:
-    spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
+```
+ERROR: Trivy 0.69.4 is COMPROMISED!
 ```
 
-## 📊 Notificaciones
+**Solución**: Actualizar `TRIVY_VERSION` a 0.69.3 o superior.
 
-El pipeline envía alertas a Slack:
+### Error: CRITICAL vulnerabilities
 
-- ✅ Build exitoso
-- ❌ Build fallido
-- 🚀 Deploy a producción
+```
+CRITICAL vulnerabilities found in dependencies!
+```
 
-## 📝 Licencia
+**Solución**: Actualizar dependencias vulnerables antes de hacer build.
 
-MIT - Alejandro Kore
+## Slack Notifications
 
-## 🤖 Actualizado por
+Configurar webhook en Jenkins:
 
-OpenClaw AI Assistant - 2026-03-21
-*Mejoras: Alerta Trivy supply chain, security scanning docs*
+```
+✅ Build succeeded - Security scans passed
+❌ Build failed - Check security scans
+```
+
+## Production Deployment
+
+Solo se despliega a producción cuando:
+- Branch es `main`
+- Todos los tests pasan
+- No hay vulnerabilidades CRITICAL
+- Scan de contenedores pasa
