@@ -32,9 +32,9 @@ This pipeline implements security at every stage:
 
 - **SAST**: Semgrep, CodeQL
 - **Dependency**: npm audit, pip-audit, Dependabot
-- **Container**: Trivy, Grype, Clair
+- **Container**: Grype (RECOMMENDED), Trivy (⚠️ Compromised), Clair
 - **Secrets**: Gitleaks, TruffleHog
-- **IaC**: Checkov, tfsec, Terrascan
+- **IaC**: Checkov (RECOMMENDED), tfsec, Terrascan
 
 ## Compliance
 

@@ -4,13 +4,34 @@ Pipeline de CI/CD con Jenkins para aplicaciones Node.js con escaneo de seguridad
 
 ## ⚠️ Alerta de Seguridad - Trivy
 
-**Marzo 2026**: Trivy v0.69.4 fue comprometido via supply chain attack.
+**Marzo 2026**: Trivy fue comprometido por segunda vez en un mes via supply chain attack.
 
-Este pipeline:
-- ❌ Evita usar Trivy 0.69.4
-- ✅ Usa Trivy 0.69.3 (o versión segura)
-- ✅ Escanea contenedores
-- ✅ Escanea dependencias npm
+**Versión comprometida**: 0.69.4
+**Vector**: GitHub Actions malicioso
+
+**Recomendación**: Usar alternativas como Grype o Checkov.
+
+## 🔐 Alternativas a Trivy
+
+### Grype (Contenedores)
+
+```bash
+# Instalación
+brew install grype
+
+# Uso
+grype nginx:latest --severity Critical,High
+```
+
+### Checkov (IaC)
+
+```bash
+# Instalación
+pip install checkov
+
+# Uso
+checkov -d ./terraform
+```
 
 ## Stages
 
@@ -20,7 +41,7 @@ Este pipeline:
 | Build | Instala dependencias y compila |
 | Test | Ejecuta tests unitarios |
 | Dependency Scan | npm audit para vulnerabilidades |
-| Trivy Security Scan | Escanea imágenes de contenedor |
+| Security Scan | Escaneo con Grype (alternativa a Trivy) |
 | Container Scan | Escaneo profundo de vulnerabilidades |
 | Docker Build | Construye imagen Docker |
 | Deploy to Staging | Despliega a staging |
@@ -34,7 +55,8 @@ Este pipeline:
 ```bash
 DOCKER_REGISTRY=docker.io
 APP_NAME=backend-api
-TRIVY_VERSION=0.69.3  # NOT 0.69.4!
+GRYPE_VERSION=0.80.0  # Recomendado
+CHECKOV_VERSION=3.0.0  # Para IaC
 ```
 
 ### Secrets (Jenkins)
@@ -47,8 +69,9 @@ TRIVY_VERSION=0.69.3  # NOT 0.69.4!
 ### Supply Chain Protection
 
 1. **npm audit**: Detecta vulnerabilidades en dependencias
-2. **Trivy**: Escanea la imagen construida
-3. **Versión verificada**: Evita versiones comprometidas
+2. **Grype**: Escanea la imagen construida (alternativa a Trivy)
+3. **Checkov**: Escaneo de infraestructura como código
+4. **Versión verificada**: Evita versiones comprometidas
 
 ### Alertas
 
@@ -66,13 +89,14 @@ TRIVY_VERSION=0.69.3  # NOT 0.69.4!
 
 ## Troubleshooting
 
-### Error: Trivy 0.69.4 detected
+### Error: Supply Chain Attack Detected
 
 ```
-ERROR: Trivy 0.69.4 is COMPROMISED!
+WARNING: Trivy 0.69.4 is COMPROMISED!
+Use Grype or Checkov instead.
 ```
 
-**Solución**: Actualizar `TRIVY_VERSION` a 0.69.3 o superior.
+**Solución**: Cambiar a Grype o Checkov como escáner de seguridad.
 
 ### Error: CRITICAL vulnerabilities
 
