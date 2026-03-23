@@ -159,4 +159,11 @@ Solo se despliega a producción cuando:
 
 ---
 
-*Actualizado: 2026-03-22 - Agregado GitHub Actions CI/CD con Grype*
+## 🌐 Referencias
+
+- [Jenkins Documentation](https://www.jenkins.io/doc/)
+- [Grype Vulnerability Scanner](https://github.com/anchore/grype)
+- [Checkov](https://www.checkov.io/)
+- [GitHub Actions](https://docs.github.com/en/actions)
+
+*Actualizado: 2026-03-23 - Agregadas referencias*
