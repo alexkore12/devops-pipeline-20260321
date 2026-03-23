@@ -1,171 +1,40 @@
 # DevOps Pipeline
 
-Pipeline de CI/CD con Jenkins para aplicaciones Node.js con escaneo de seguridad.
+Pipeline de DevOps automatizado con Jenkins y Docker.
 
-## ⚠️ Alerta de Seguridad - Trivy
+## 📋 Descripción
 
-**Marzo 2026**: Trivy fue comprometido por segunda vez en un mes via supply chain attack.
+Pipeline de CI/CD para despliegues automatizados usando Jenkins y Docker.
 
-**Versión comprometida**: 0.69.4
-**Vector**: GitHub Actions malicioso
-
-**Recomendación**: Usar alternativas como Grype o Checkov.
-
-## 🔐 Alternativas a Trivy
-
-### Grype (Contenedores)
+## 🚀 Inicio Rápido
 
 ```bash
-# Instalación
-brew install grype
+# Configurar pipeline
+./setup.sh
 
-# Uso
-grype nginx:latest --severity Critical,High
+# Verificar salud
+python3 health_check.py
 ```
 
-### Checkov (IaC)
+## 📦 Estructura
 
-```bash
-# Instalación
-pip install checkov
-
-# Uso
-checkov -d ./terraform
+```
+.
+├── Jenkinsfile          # Definición del pipeline
+├── docker-compose.yml  # Orquestación de servicios
+├── setup.sh           # Script de configuración
+└── README.md          # Este archivo
 ```
 
-## Stages
-
-| Stage | Descripción |
-|-------|-------------|
-| Checkout | Clona el repositorio |
-| Build | Instala dependencias y compila |
-| Test | Ejecuta tests unitarios |
-| Dependency Scan | npm audit para vulnerabilidades |
-| Security Scan | Escaneo con Grype (alternativa a Trivy) |
-| Container Scan | Escaneo profundo de vulnerabilidades |
-| Docker Build | Construye imagen Docker |
-| Deploy to Staging | Despliega a staging |
-| Integration Tests | Tests de integración |
-| Deploy to Production | Despliega a producción (solo main) |
-
-## 🤖 GitHub Actions
-
-El proyecto incluye workflows de CI/CD:
-
-### Workflows Incluidos
-
-| Workflow | Descripción | Frecuencia |
-|----------|-------------|------------|
-| `ci.yml` | Pipeline completo CI/CD | Push + Manual |
-| | Linting con shellcheck | |
-| | Escaneo de secretos | |
-| | Security scan con Grype | |
-| | Validación de Jenkinsfile | |
-| | Build de Docker | |
-| | Deploy (staging/production) | |
-
-### Uso de GitHub Actions
-
-```bash
-# Trigger manual deployment
-gh workflow run ci.yml -f environment=staging
-gh workflow run ci.yml -f environment=production
-```
-
-### Configuración de Secrets
-
-- `DOCKER_USERNAME`: Usuario de Docker Hub
-- `DOCKER_PASSWORD`: Token de Docker Hub
-- `KUBECONFIG`: Configuración de Kubernetes
-
-## Configuración
+## 🔧 Configuración
 
 ### Variables de Entorno
 
-```bash
-DOCKER_REGISTRY=docker.io
-APP_NAME=backend-api
-GRYPE_VERSION=0.80.0  # Recomendado
-CHECKOV_VERSION=3.0.0  # Para IaC
-```
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `JENKINS_URL` | URL de Jenkins | localhost:8080 |
+| `DOCKER_REGISTRY` | Registry Docker | docker.io |
 
-### Secrets (Jenkins)
+## 📄 Licencia
 
-- `DOCKER_REGISTRYCredentials`: Credenciales del registry
-- `KUBECONFIG`: Configuración de Kubernetes
-
-## Seguridad
-
-### Supply Chain Protection
-
-1. **npm audit**: Detecta vulnerabilidades en dependencias
-2. **Grype**: Escanea la imagen construida (alternativa a Trivy)
-3. **Checkov**: Escaneo de infraestructura como código
-4. **Versión verificada**: Evita versiones comprometidas
-
-### Alertas
-
-- **CRITICAL**: Falla el build
-- **HIGH**: Notificación a Slack
-
-## Estructura
-
-```
-devops-pipeline-20260321/
-├── Jenkinsfile           # Pipeline de Jenkins
-├── README.md             # Este archivo
-├── DEPLOYMENT.md         # Guía de deployment
-├── SECURITY.md           # Políticas de seguridad
-└── .github/
-    └── workflows/
-        └── ci.yml        # GitHub Actions CI/CD
-```
-
-## Ejecución
-
-```bash
-# En Jenkins
-# 1. Crear pipeline job
-# 2. Point to Jenkinsfile
-# 3. Run build
-```
-
-## Troubleshooting
-
-### Error: Supply Chain Attack Detected
-
-```
-WARNING: Trivy 0.69.4 is COMPROMISED!
-Use Grype or Checkov instead.
-```
-
-**Solución**: Cambiar a Grype o Checkov como escáner de seguridad.
-
-### Error: CRITICAL vulnerabilities
-
-```
-CRITICAL vulnerabilities found in dependencies!
-```
-
-**Solución**: Actualizar dependencias vulnerables antes de hacer build.
-
-## Slack Notifications
-
-Configurar webhook en Jenkins:
-
-```
-✅ Build succeeded - Security scans passed
-❌ Build failed - Check security scans
-```
-
-## Production Deployment
-
-Solo se despliega a producción cuando:
-- Branch es `main`
-- Todos los tests pasan
-- No hay vulnerabilidades CRITICAL
-- Scan de contenedores pasa
-
----
-
-*Actualizado: 2026-03-22 - Agregado GitHub Actions CI/CD con Grype*
+MIT License - voir `LICENSE` para detalles.
