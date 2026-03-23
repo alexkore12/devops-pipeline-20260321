@@ -1,163 +1,258 @@
-# DevOps Pipeline
+# 🔄 DevOps Pipeline 2026
 
-Pipeline de CI/CD con Jenkins para aplicaciones Node.js con escaneo de seguridad - Versión 2.0
+Pipeline de CI/CD completo y automatizado para aplicaciones containerizadas con seguridad integrada.
 
-> ⚠️ **Marzo 2026**: Trivy fue comprometido por segunda vez en un mes via supply chain attack.
-> 
-> **Versión comprometida**: 0.69.4  
-> **Vector**: GitHub Actions malicioso  
-> 
-> ✅ **Solución**: Usar alternativas como Grype o Checkov.
+## ⚠️ Aviso de Seguridad - Trivy Comprometido
 
-## Alternativas Seguras a Trivy
+**Marzo 2026:** Trivy sufrió un segundo ataque de supply chain. Este pipeline **ha migrado a Grype** como alternativa segura.
 
-### Grype
+- **Grype**: Escaneo de vulnerabilidades principal
+- **Checkov**: Escaneo de infraestructura como código (IaC)
 
-```bash
-# Instalación
-brew install grype
+## 📋 Descripción
 
-# Uso
-grype nginx:latest --severity Critical,High
-```
+Pipeline declarativo Jenkins que automatiza el ciclo de vida completo:
+- **Build** → **Test** → **Security Scan** → **Deploy**
 
-### Checkov
+## 🚀 Características
 
-```bash
-# Instalación
-pip install checkov
+- ✅ Multi-stage Pipeline con stages independientes
+- ✅ Docker Integration - Build y push de imágenes
+- ✅ Security Scanning con Grype (reemplazó Trivy)
+- ✅ Kubernetes Deploy - Staging y Production
+- ✅ Branch-based - Estrategias para develop y main
+- ✅ Notifications - Alertas por Slack/Email
+- ✅ Dependency Scanning - npm audit
+- ✅ Container Scanning - Grype image scan
+- ✅ IaC Scanning - Checkov para Kubernetes YAML
 
-# Uso
-checkov -d ./terraform
-```
-
-## Stages del Pipeline
-
-| Stage | Descripción |
-|-------|-------------|
-| Checkout | Clona el repositorio |
-| Build | Instala dependencias y compila |
-| Test | Ejecuta tests unitarios |
-| Dependency Scan | npm audit para vulnerabilidades |
-| Security Scan | Escaneo con Grype (alternativa a Trivy) |
-| Container Scan | Escaneo profundo de vulnerabilidades |
-| Docker Build | Construye imagen Docker |
-| Deploy to Staging | Despliega a staging |
-| Integration Tests | Tests de integración |
-| Deploy to Production | Despliega a producción (solo main) |
-
-## 🤖 GitHub Actions
-
-El proyecto incluye workflows de CI/CD:
-
-### Workflows Incluidos
-
-| Workflow | Descripción | Frecuencia |
-|----------|-------------|------------|
-| `ci.yml` | Pipeline completo CI/CD | Push + Manual |
-| | Linting con shellcheck | |
-| | Escaneo de secretos | |
-| | Security scan con Grype | |
-| | Validación de Jenkinsfile | |
-| | Build de Docker | |
-| | Deploy (staging/production) | |
-
-### Uso de GitHub Actions
-
-```bash
-# Trigger manual deployment
-gh workflow run ci.yml -f environment=staging
-gh workflow run ci.yml -f environment=production
-```
-
-### Configuración de Secrets
-
-- `DOCKER_USERNAME`: Usuario de Docker Hub
-- `DOCKER_PASSWORD`: Token de Docker Hub
-- `KUBECONFIG`: Configuración de Kubernetes
-
-## Configuración
-
-### Variables de Entorno
-
-```bash
-DOCKER_REGISTRY=docker.io
-APP_NAME=backend-api
-GRYPE_VERSION=0.80.0  # Recomendado
-CHECKOV_VERSION=3.0.0 # Para IaC
-```
-
-### Credentials Requeridas
-
-- `DOCKER_REGISTRY` - Credenciales del registry
-- `KUBECONFIG` - Configuración de Kubernetes
-
-## Escaneo de Seguridad
-
-### npm audit
-
-Detecta vulnerabilidades en dependencias npm.
-
-### Grype
-
-## Estructura
+## 📁 Estructura del Proyecto
 
 ```
 devops-pipeline-20260321/
-├── Jenkinsfile           # Pipeline de Jenkins
-├── README.md             # Este archivo
-├── DEPLOYMENT.md         # Guía de deployment
-├── SECURITY.md           # Políticas de seguridad
-└── .github/
-    └── workflows/
-        └── ci.yml        # GitHub Actions CI/CD
+├── Jenkinsfile              # Pipeline declarativo principal
+├── docker-compose.yml       # Orquestación de servicios
+├── Dockerfile               # Imagen de la aplicación
+├── Makefile                 # Comandos útiles
+├── setup.sh                 # Script de configuración
+├── health_check.py         # Script de health check
+├── k8s/                    # Manifiestos Kubernetes
+│   ├── staging/           # Staging deployment
+│   └── production/        # Production deployment
+├── .github/                # GitHub Actions (backup)
+│   └── workflows/
+├── .grype.yaml            # Configuración de Grype
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── LICENSE
+├── CODEOWNERS
+├── CONTRIBUTING.md
+├── DEPLOYMENT.md          # Guía de despliegue
+├── SECURITY.md            # Política de seguridad
+├── CHANGELOG.md
+└── README.md
 ```
 
-## Ejecución
+## 🚀 Inicio Rápido
+
+### 1. Configuración Inicial
 
 ```bash
-grype myapp:latest --severity Critical,High
+# Clonar y configurar
+git clone https://github.com/alexkore12/devops-pipeline-20260321.git
+cd devops-pipeline-20260321
+
+# Ejecutar script de setup
+chmod +x setup.sh
+./setup.sh
 ```
 
-### Checkov
-
-Escaneo de infraestructura como código.
+### 2. Configurar Variables de Entorno
 
 ```bash
-checkov -d ./terraform
-checkov -f Dockerfile
+# Copiar ejemplo de configuración
+cp .env.example .env
+
+# Editar con tus valores
+nano .env
 ```
 
-## Políticas de Seguridad
+### 3. Verificar Salud del Sistema
 
-### Versión verificada
+```bash
+python3 health_check.py
+```
 
-Evita versiones comprometidas.
+## 📊 Pipeline Stages
 
-### Umbral de severidad
+```
+┌─────────────┐    ┌──────────┐    ┌─────────┐    ┌──────────────┐
+│  Checkout   │───▶│   Build   │───▶│  Test   │───▶│Security Scan │
+└─────────────┘    └──────────┘    └─────────┘    └──────────────┘
+                                                        │
+                                                        ▼
+┌─────────────┐    ┌─────────────┐    ┌────────────┐    ┌──────────────┐
+│   Notify    │◀───│  Deploy     │◀───│  Approve   │◀───│    Scan     │
+│             │    │  Prod       │    │            │    │  Container   │
+└─────────────┘    └─────────────┘    └────────────┘    └──────────────┘
+```
 
-- **CRITICAL**: Falla el build
-- **HIGH**: Notificación a Slack
+## 🐳 Docker
 
-## Configuración de Notificaciones
+### Build Manual
 
-### Slack
+```bash
+docker build -t devops-pipeline .
+```
 
-Configurar webhook en Jenkins:
+### Docker Compose
 
-✅ Build succeeded - Security scans passed  
-❌ Build failed - Check security scans
+```bash
+# Iniciar servicios
+docker-compose up -d
 
-## Reglas de Despliegue
+# Ver logs
+docker-compose logs -f
 
-Solo se despliega a producción cuando:
+# Detener
+docker-compose down
+```
 
-- Branch es `main`
-- Todos los tests pasan
-- No hay vulnerabilidades CRITICAL
-- Scan de contenedores pasa
+### Variables de Entorno Docker
 
----
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `APP_NAME` | Nombre de la aplicación | backend-api |
+| `PORT` | Puerto de la app | 3000 |
+| `NODE_ENV` | Entorno | development |
+| `LOG_LEVEL` | Nivel de logging | info |
+
+## ☸️ Kubernetes
+
+### Requisitos
+
+- Kubernetes cluster (minikube, kind, EKS, GKE, AKS)
+- kubectl configurado
+- Docker registry accesible
+
+### Despliegue a Staging
+
+```bash
+kubectl apply -f k8s/staging/
+```
+
+### Despliegue a Production
+
+```bash
+kubectl apply -f k8s/production/
+```
+
+### Verificar Deployment
+
+```bash
+kubectl rollout status deployment/<APP_NAME>
+```
+
+## 🔐 Seguridad
+
+### Escaneo con Grype
+
+```bash
+# Instalar Grype
+curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh
+
+# Escanear imagen
+grype image tu-imagen:latest
+
+# Escanear directorio local
+grype fs ./path/to/code
+```
+
+### Escaneo con Checkov
+
+```bash
+# Instalar Checkov
+pip install checkov
+
+# Escanear archivos YAML
+checkov -d k8s/
+
+# Escanear archivo específico
+checkov -f k8s/production/deployment.yaml
+```
+
+### Variables de Seguridad
+
+| Variable | Descripción |
+|----------|-------------|
+| `TRIVY_VERSION` | Versión de Trivy (NO usar 0.69.4) |
+| `GRYPE_VERSION` | Versión de Grype |
+| `SCAN_SEVERITY` | Severidad mínima (MEDIUM, HIGH, CRITICAL) |
+
+## 🔧 Comandos Útiles
+
+### Makefile
+
+```bash
+make help              # Mostrar ayuda
+make build            # Build Docker
+make test             # Ejecutar tests
+make scan             # Security scan
+make deploy-staging   # Deploy a staging
+make deploy-prod      # Deploy a production
+make clean            # Limpiar contenedores
+```
+
+## 📈 Monitoreo
+
+### Health Check
+
+```bash
+python3 health_check.py
+```
+
+Salida esperada:
+```json
+{
+  "service": "devops-pipeline",
+  "status": "healthy",
+  "checks": {...}
+}
+```
+
+## 📝 Changelog
+
+### v2.0.0 (2026-03-23)
+- ✅ Migrado de Trivy a Grype (supply chain security)
+- ✅ Añadido Checkov para escaneo de IaC
+- ✅ Mejorado README con documentación completa
+- ✅ Añadido CODEOWNERS
+- ✅ Añadido health_check.py
+- ✅ Añadido setup.sh
+- ✅ Añadido Makefile
+
+### v1.0.0 (2026-03-21)
+- ✅ Pipeline inicial con Jenkins
+- ✅ Stages: Build, Test, Deploy
+- ✅ Docker integration
+
+## 🤝 Contributing
+
+Ver [CONTRIBUTING.md](CONTRIBUTING.md) para guidelines.
+
+## 📄 Licencia
+
+MIT License - ver [LICENSE](LICENSE) para detalles.
+
+## 👤 Autor
+
+**alexkore12** - https://github.com/alexkore12
+
+## 🤖 Actualizado por
+
+OpenClaw AI Assistant - 2026-03-23
+*Mejoras v2.0: Grype + Checkov + documentación completa*
 
 ## 🌐 Referencias
 
@@ -165,5 +260,3 @@ Solo se despliega a producción cuando:
 - [Grype Vulnerability Scanner](https://github.com/anchore/grype)
 - [Checkov](https://www.checkov.io/)
 - [GitHub Actions](https://docs.github.com/en/actions)
-
-*Actualizado: 2026-03-23 - Agregadas referencias*
