@@ -46,6 +46,36 @@ checkov -d ./terraform
 | Integration Tests | Tests de integración |
 | Deploy to Production | Despliega a producción (solo main) |
 
+## 🤖 GitHub Actions
+
+El proyecto incluye workflows de CI/CD:
+
+### Workflows Incluidos
+
+| Workflow | Descripción | Frecuencia |
+|----------|-------------|------------|
+| `ci.yml` | Pipeline completo CI/CD | Push + Manual |
+| | Linting con shellcheck | |
+| | Escaneo de secretos | |
+| | Security scan con Grype | |
+| | Validación de Jenkinsfile | |
+| | Build de Docker | |
+| | Deploy (staging/production) | |
+
+### Uso de GitHub Actions
+
+```bash
+# Trigger manual deployment
+gh workflow run ci.yml -f environment=staging
+gh workflow run ci.yml -f environment=production
+```
+
+### Configuración de Secrets
+
+- `DOCKER_USERNAME`: Usuario de Docker Hub
+- `DOCKER_PASSWORD`: Token de Docker Hub
+- `KUBECONFIG`: Configuración de Kubernetes
+
 ## Configuración
 
 ### Variables de Entorno
@@ -70,7 +100,20 @@ Detecta vulnerabilidades en dependencias npm.
 
 ### Grype
 
-Escanea la imagen construida (alternativa a Trivy).
+## Estructura
+
+```
+devops-pipeline-20260321/
+├── Jenkinsfile           # Pipeline de Jenkins
+├── README.md             # Este archivo
+├── DEPLOYMENT.md         # Guía de deployment
+├── SECURITY.md           # Políticas de seguridad
+└── .github/
+    └── workflows/
+        └── ci.yml        # GitHub Actions CI/CD
+```
+
+## Ejecución
 
 ```bash
 grype myapp:latest --severity Critical,High
@@ -114,174 +157,6 @@ Solo se despliega a producción cuando:
 - No hay vulnerabilidades CRITICAL
 - Scan de contenedores pasa
 
-## Jenkinsfile
+---
 
-```groovy
-pipeline {
-    agent any
-    
-    environment {
-        DOCKER_REGISTRY = 'docker.io'
-        APP_NAME = 'backend-api'
-    }
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                sh 'npm install'
-                sh 'npm run build'
-            }
-        }
-        
-        stage('Test') {
-            steps {
-                sh 'npm test'
-            }
-        }
-        
-        stage('Dependency Scan') {
-            steps {
-                sh 'npm audit --audit-level=high'
-            }
-        }
-        
-        stage('Security Scan') {
-            steps {
-                sh 'grype ${APP_NAME}:${VERSION} --severity Critical,High || true'
-            }
-        }
-        
-        stage('Docker Build') {
-            steps {
-                sh "docker build -t ${APP_NAME}:${VERSION} ."
-                sh "docker tag ${APP_NAME}:${VERSION} ${DOCKER_REGISTRY}/${APP_NAME}:${VERSION}"
-            }
-        }
-        
-        stage('Deploy to Staging') {
-            steps {
-                sh 'kubectl apply -f k8s/staging/'
-            }
-        }
-        
-        stage('Integration Tests') {
-            steps {
-                sh 'npm run test:integration'
-            }
-        }
-        
-        stage('Deploy to Production') {
-            when {
-                branch 'main'
-            }
-            steps {
-                input 'Deploy to Production?'
-                sh 'kubectl apply -f k8s/production/'
-            }
-        }
-    }
-    
-    post {
-        success {
-            slackSend channel: '#deployments', color: 'good', message: "Deployment successful: ${env.JOB_NAME}"
-        }
-        failure {
-            slackSend channel: '#deployments', color: 'danger', message: "Deployment failed: ${env.JOB_NAME}"
-        }
-    }
-}
-```
-
-## GitHub Actions (Alternativo)
-
-```yaml
-name: CI/CD
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run tests
-        run: npm test
-      
-      - name: Build Docker
-        run: docker build -t app:${{ github.sha }} .
-
-  security:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run Grype
-        uses: anchore/grype-action@v0.17.0
-        with:
-          image: app:${{ github.sha }}
-          severity-cutoff: High
-
-  deploy:
-    needs: security
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Deploy
-        run: kubectl apply -f k8s/production/
-```
-
-## Errores Comunes y Soluciones
-
-### ⚠️ WARNING: Trivy 0.69.4 is COMPROMISED!
-
-**Solución**: Cambiar a Grype o Checkov como escáner de seguridad.
-
-### ⚠️ CRITICAL vulnerabilities found
-
-**Solución**: Actualizar dependencias vulnerables antes de hacer build.
-
-## Mejores Prácticas
-
-1. ✅ Usar Grype o Checkov en lugar de Trivy
-2. ✅ Ejecutar scans en cada build
-3. ✅ Bloquear deployment en vulnerabilidades CRITICAL
-4. ✅ Usar dependencias actualizadas
-5. ✅ Firmar imágenes con Cosign
-6. ✅ Generar SBOM (Software Bill of Materials)
-
-## Changelog
-
-- ✅ v2.0 - Grype替换Trivy, GitHub Actions añadido
-- ✅ v1.0 - Versión inicial con Trivy
-
-## Licencia
-
-MIT
-
-## Autor
-
-GitHub: [alexkore12](https://github.com/alexkore12)
-
-Este proyecto fue actualizado por OpenClaw AI Assistant - 2026-03-22
+*Actualizado: 2026-03-22 - Agregado GitHub Actions CI/CD con Grype*

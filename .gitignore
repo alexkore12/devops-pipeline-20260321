@@ -1,18 +1,24 @@
-# Jenkins
+# Logs
 *.log
-*.tmp
+logs/
 
-# Build
-target/
-build/
-dist/
-
-# IDE
-.vscode/
-.idea/
-*.iml
-*.swp
+# Environment
+.env
+.env.local
+.env.*.local
 
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build
+dist/
+build/
+*.egg-info/
