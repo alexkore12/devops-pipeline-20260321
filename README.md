@@ -30,28 +30,28 @@ Pipeline declarativo Jenkins que automatiza el ciclo de vida completo:
 
 ```
 devops-pipeline-20260321/
-├── Jenkinsfile              # Pipeline declarativo principal
-├── docker-compose.yml       # Orquestación de servicios
-├── Dockerfile               # Imagen de la aplicación
-├── Makefile                 # Comandos útiles
-├── setup.sh                 # Script de configuración
-├── health_check.py         # Script de health check
-├── k8s/                    # Manifiestos Kubernetes
-│   ├── staging/           # Staging deployment
-│   └── production/        # Production deployment
-├── .github/                # GitHub Actions (backup)
-│   └── workflows/
-├── .grype.yaml            # Configuración de Grype
 ├── .dockerignore
 ├── .env.example
+├── .gitattributes
 ├── .gitignore
-├── LICENSE
+├── .github/
+│   └── workflows/          # GitHub Actions (backup CI)
+├── .grype.yaml              # Configuración de Grype
+├── CODE_OF_CONDUCT.md
 ├── CODEOWNERS
 ├── CONTRIBUTING.md
-├── DEPLOYMENT.md          # Guía de despliegue
-├── SECURITY.md            # Política de seguridad
-├── CHANGELOG.md
-└── README.md
+├── deploy.sh                 # Script de despliegue
+├── DEPLOYMENT.md            # Guía de despliegue detallada
+├── docker-compose.yml       # Orquestación de servicios
+├── Dockerfile               # Imagen de la aplicación
+├── health_check.py         # Script de verificación de salud
+├── Jenkinsfile             # Pipeline declarativo principal
+├── LICENSE
+├── Makefile                 # Comandos útiles
+├── monitor.sh               # Script de monitoreo
+├── README.md
+├── SECURITY.md              # Política de seguridad
+└── setup.sh                 # Script de configuración
 ```
 
 ## 🚀 Inicio Rápido
