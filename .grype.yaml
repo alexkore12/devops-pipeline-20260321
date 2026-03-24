@@ -1,0 +1,27 @@
+# Grype vulnerability scanner configuration for devops-pipeline-20260321
+# https://github.com/anchore/grype
+
+name: devops-pipeline-20260321
+version: 1.0.0
+
+# DB configuration
+db:
+  check-for-app-update: true
+  auto-update: false
+
+# Output configuration
+output:
+  format: table
+
+# Severity filter - fail on HIGH and CRITICAL
+severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+
+# Fail on match
+fail-on: medium
+
+# Environment
+env:
+  - PULLED_POLICY=*
